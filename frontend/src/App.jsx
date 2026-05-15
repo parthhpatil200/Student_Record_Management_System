@@ -3,7 +3,7 @@ import axios from 'axios';
 import './App.css';
 
 /* const API = 'http://localhost:5000/students'; */
-const API = 'http://localhost:5000/students';
+const API = 'http://13.201.5.151:5000/students';
 
 const EMPTY_FORM = {
   name: '', rollNumber: '', email: '', phone: '',
