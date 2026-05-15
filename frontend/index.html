@@ -197,4 +197,101 @@ S3 Policy: Paste the JSON policy I gave you earlier.
 
 MongoDB Atlas: Add IP 13.127.213.37 to Network Access.
 
-Is there any specific command that gave you an error when you tried it just now? -->
+Is there any specific command that gave you an error when you tried it just now? 
+
+General Cloud Concepts
+1. What are the three main Service Models in Cloud Computing?
+
+IaaS (Infrastructure as a Service): You get raw hardware/VMs (e.g., AWS EC2). You manage the OS and apps.
+
+PaaS (Platform as a Service): You get a platform to deploy code without managing servers (e.g., AWS Elastic Beanstalk, Heroku).
+
+SaaS (Software as a Service): Ready-to-use software (e.g., Gmail, Salesforce).
+
+2. What is the difference between Public, Private, and Hybrid Clouds?
+
+Public: Resources shared by multiple organizations over the internet (AWS, Azure).
+
+Private: Cloud infrastructure used exclusively by a single organization.
+
+Hybrid: A mix of on-premises infrastructure and public cloud, connected together.
+
+3. What are "Availability Zones" (AZ) and "Regions"?
+
+Region: A physical location in the world where AWS has multiple data centers (e.g., ap-south-1 for Mumbai).
+
+Availability Zone: One or more discrete data centers within a Region with redundant power and networking. High availability is achieved by spreading resources across multiple AZs.
+
+AWS Compute & Storage
+4. What is AWS EC2 and what does "t2.micro" signify?
+
+EC2 (Elastic Compute Cloud): Provides resizable virtual servers.
+
+t2.micro: It is an Instance Type. "t" is the family (burstable performance), "2" is the generation, and "micro" is the size (CPU/RAM capacity).
+
+5. What is the difference between S3 and EBS?
+
+S3 (Simple Storage Service): Object storage used for static files, backups, and web hosting (What you used for your Frontend). It is accessible via URL.
+
+EBS (Elastic Block Store): Block storage used as a hard drive for EC2 instances (Where your Ubuntu OS was installed). It must be "attached" to a server.
+
+6. What is an AMI (Amazon Machine Image)?
+
+It is a template that contains the software configuration (OS, application server, and applications) required to launch your instance. You used an Ubuntu 24.04 AMI for your backend.
+
+Networking & Security
+7. What is a VPC (Virtual Private Cloud)?
+
+A VPC is a logically isolated section of the AWS Cloud where you can launch AWS resources in a virtual network that you define. It gives you complete control over your networking environment.
+
+8. Explain Security Groups vs. Network ACLs.
+
+Security Group: Acts as a virtual firewall for your instance (EC2). It is stateful (if you allow inbound, outbound is automatically allowed).
+
+Network ACL: An optional layer of security for your subnet that acts as a firewall for controlling traffic in and out of one or more subnets (Stateless).
+
+9. What is the Range of Private IP addresses (CIDR blocks)?
+The standard private IP ranges (defined by RFC 1918) used in VPCs are:
+
+10.0.0.0 – 10.255.255.255 (10/8 prefix)
+
+172.16.0.0 – 172.31.255.255 (172.16/12 prefix)
+
+192.168.0.0 – 192.168.255.255 (192.168/16 prefix)
+
+10. What is the purpose of an Internet Gateway (IGW)?
+
+It is a VPC component that allows communication between your VPC and the internet. Without an IGW, your EC2 instance cannot be reached via its Public IP.
+
+Deployment & Scalability
+11. What is "Auto Scaling" and "Elastic Load Balancing" (ELB)?
+
+Auto Scaling: Automatically adds or removes EC2 instances based on demand (CPU usage, etc.).
+
+ELB: Automatically distributes incoming application traffic across multiple target instances to ensure no single server is overwhelmed.
+
+12. What is the "Shared Responsibility Model" in AWS?
+
+AWS is responsible for security "OF" the cloud (Physical hardware, global infrastructure).
+
+The Customer is responsible for security "IN" the cloud (Patching the OS, configuring Security Groups, managing data/passwords).
+
+13. What is CloudWatch?
+
+A monitoring and observability service that collects data (logs, metrics) and allows you to set alarms if things go wrong (e.g., if EC2 CPU usage hits 90%).
+
+Advanced/Scenario-based
+14. Why did you use PM2 for your backend deployment?
+
+PM2 is a Process Manager. In production, if your Node.js code crashes, the server stops. PM2 automatically restarts the process and ensures the "Engine" keeps running even after a server reboot.
+
+15. What is "Serverless" computing (AWS Lambda)?
+
+A model where you run code without provisioning or managing servers. You only pay for the compute time you consume. (Unlike EC2, where you pay as long as the server is "Running").
+
+Bonus "Pro" Question: How does S3 Static Website Hosting work?
+Answer: S3 serves the files (HTML/CSS/JS) via a generated URL. Since it is "Static," it cannot execute server-side code (like Node.js or Python). This is why the Frontend must be "built" (compiled) into static files before uploading.
+
+Final Tip for Viva: If they ask you about costs, mention that you used the AWS Free Tier, which provides 750 hours of t2.micro per month and 5GB of S3 storage for the first year.
+
+Is there any specific AWS service that still feels like a "black box" to you?-->
