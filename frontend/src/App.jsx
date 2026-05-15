@@ -3,7 +3,7 @@ import axios from 'axios';
 import './App.css';
 
 /* const API = 'http://localhost:5000/students'; */
-const API = 'http://YOUR_PUBLIC_IP:5000/students';
+const API = 'http://localhost:5000/students';
 
 const EMPTY_FORM = {
   name: '', rollNumber: '', email: '', phone: '',
@@ -174,7 +174,9 @@ function App() {
       showToast('Student added successfully!');
       fetchStudents();
     } catch (err) {
-      setFormError(err.response?.data?.message || 'Something went wrong.');
+      setFormError(
+        err.response?.data?.message || 'Backend is not reachable or MongoDB authentication failed.'
+      );
     } finally {
       setSubmitting(false);
     }
