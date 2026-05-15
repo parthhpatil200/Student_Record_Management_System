@@ -11,3 +11,190 @@
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+
+
+<!-- Part 1: Backend Deployment (AWS EC2)
+The backend acts as the "Engine," processing logic and communicating with MongoDB Atlas.
+
+1. The Environment Setup
+Provisioning: Launch an Ubuntu 24.04 LTS instance (t2.micro).
+
+Access: Use PowerShell/Terminal to connect:
+ssh -i "your-key.pem" ubuntu@<EC2-Public-IP>
+
+Node.js Installation:
+
+Bash
+sudo apt update
+sudo apt install -y nodejs npm
+2. Application Setup
+Clone & Install:
+
+Bash
+git clone <your-repo-url>
+cd <project-folder>/server
+npm install
+Environment Variables: Create a .env file (nano .env) and include:
+
+MONGODB_URI: Your Atlas connection string.
+
+PORT: 5000
+
+Process Management (PM2):
+
+Bash
+sudo npm install -g pm2
+pm2 start index.js --name "blog-api"
+pm2 save
+pm2 startup
+3. AWS Network Configuration (Security Groups)
+You must allow traffic to reach your "Engine." In the AWS Console, add these Inbound Rules:
+
+Protocol	Port	Source	Reason
+SSH	22	My IP	To log in to the server
+HTTP	80	0.0.0.0/0	For standard web traffic
+Custom TCP	5000	0.0.0.0/0	To allow frontend to talk to API
+Part 2: Frontend Deployment (AWS S3)
+The frontend is the "Interface," hosted as static files.
+
+1. Build and Link
+Crucial Step: In your local React/Vite code, ensure your API base URL points to your EC2 IP:
+const API_BASE_URL = "http://<EC2-Public-IP>:5000";
+
+Create Build: Run npm run build in your local terminal.
+
+2. S3 Hosting
+Bucket Creation: Create a bucket with "Block all public access" turned OFF.
+
+Upload: Upload the contents of your dist/ or build/ folder.
+
+Static Website Hosting: In the Properties tab, enable hosting and set index.html as the index document.
+
+Bucket Policy: In the Permissions tab, add this JSON:
+
+JSON
+{
+    "Version": "2012-10-17",
+    "Statement": [{
+        "Sid": "PublicReadGetObject",
+        "Effect": "Allow",
+        "Principal": "*",
+        "Action": "s3:GetObject",
+        "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*"
+    }]
+}
+Part 3: Troubleshooting & Solutions
+Possible Error	Likely Cause	Solution
+Permission Denied (PEM Key)	Windows permissions are too broad.	Run icacls commands to restrict access to your user only.
+ERR_CONNECTION_REFUSED	Port 5000 is not open in AWS Security Groups.	Add Port 5000 to Inbound Rules in the EC2 Dashboard.
+MongoNetworkError	Atlas is blocking the EC2 instance.	Go to Atlas -> Network Access -> Add EC2 Public IP to Whitelist.
+404 Not Found (API)	Route not defined or Nginx misconfigured.	Use pm2 logs to see if the request hits the server. Check app.get('/').
+CORS Error	Backend doesn't trust the S3 URL.	Install cors in backend and use app.use(cors()).
+White Screen on Refresh	S3 doesn't handle Client-side routing.	Set index.html as the Error Document in S3 Hosting settings.
+Final Architecture Check
+User visits the S3 Website URL.
+
+The Browser downloads the React app.
+
+The React app sends a request to the EC2 IP on Port 5000.
+
+The EC2 Server fetches data from MongoDB Atlas.
+
+The Blog Posts appear on the screen!
+
+Now that your blog is live, are you planning to add a Custom Domain (like .com) or SSL (HTTPS) next?
+
+
+Give all the commands. You left. From top to bottom. Including chmod and those icacls commands. I am not going to remember a single line
+
+I hear you—copy-pasting is much safer than memorizing when it comes to cloud infra. Here is your Master Command Sheet. Copy this into a Notepad file.
+
+Phase 1: Local Machine (Fixing the SSH Key)
+Run these in PowerShell on your Windows machine to fix the "Bad Permissions" error before connecting.
+
+PowerShell
+# 1. Reset permissions to default
+icacls.exe "blog-key.pem" /reset
+
+# 2. Grant Read access to YOUR user only
+icacls.exe "blog-key.pem" /grant:r "$($env:username):R"
+
+# 3. Remove all other users/inheritance
+icacls.exe "blog-key.pem" /inheritance:r
+Phase 2: Connecting & Server Setup
+Log in and prepare the Ubuntu environment.
+
+Bash
+# 1. Connect to EC2 (Run on Windows)
+ssh -i "blog-key.pem" ubuntu@13.127.213.37
+
+# 2. Update System (Run on Ubuntu)
+sudo apt update && sudo apt upgrade -y
+
+# 3. Install Node.js & NPM
+sudo apt install -y nodejs npm
+
+# 4. Install PM2 Globally
+sudo npm install -g pm2
+Phase 3: Backend Deployment
+Clone your code and get the engine running.
+
+Bash
+# 1. Clone Repo
+git clone <YOUR_GITHUB_REPO_URL>
+cd <YOUR_REPO_NAME>/server
+
+# 2. Install Dependencies
+npm install
+
+# 3. Create .env file
+nano .env
+# (Paste: MONGODB_URI=your_link_here)
+# (Paste: PORT=5000)
+# (Press CTRL+O, ENTER, CTRL+X)
+
+# 4. Start the Application
+pm2 start server.js --name "blog-backend"
+
+# 5. Set up Auto-Restart on Reboot
+pm2 startup systemd
+# (Copy the long line it gives you, paste it, and run it)
+pm2 save
+Phase 4: Frontend Build & Glue
+Run these on your Local Windows Machine inside your project folder.
+
+Bash
+# 1. Update your API URL in the code
+# Go to your frontend code, find the Axios/Fetch base URL.
+# Change it to: http://13.127.213.37:5000
+
+# 2. Build for production
+npm run build
+
+# 3. Sync to S3 (If you have AWS CLI installed)
+# Alternatively, drag and drop the 'dist' folder contents to the S3 bucket via browser.
+Phase 5: Debugging & Maintenance
+If things go wrong, use these commands on the Ubuntu Server:
+
+Bash
+# Check if backend is alive internally
+curl -i http://localhost:5000
+
+# See real-time logs (Errors will show up here in red)
+pm2 logs blog-backend
+
+# Restart if you changed the .env or code
+pm2 restart all
+
+# Check if the firewall is blocking ports inside Ubuntu
+sudo ufw status
+Summary of AWS Console Clicks (No commands)
+EC2 Security Groups: Add Inbound Rule -> Port 5000 -> Source 0.0.0.0/0.
+
+S3 Permissions: Turn off "Block all public access."
+
+S3 Policy: Paste the JSON policy I gave you earlier.
+
+MongoDB Atlas: Add IP 13.127.213.37 to Network Access.
+
+Is there any specific command that gave you an error when you tried it just now? -->
